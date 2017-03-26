@@ -335,6 +335,7 @@ shinyServer(function(input, output) {
     #plot_data_cy <- round(y_dat/plot_data_cy2, digits=4)
     click_ydata <<- y_dat
     
+    #par(bg="grey")
     #plot(y_numerator()$stat/y_denominator()$stat, x_numerator()$stat/x_denominator()$stat)
     plot(x_dat, y_dat,
          #main = paste(cylab,per_cylab,"vs.",cxlab,per_cxlab,clab2),
@@ -342,6 +343,12 @@ shinyServer(function(input, output) {
          main = paste(main_y,main_y_per,"vs.",main_x,main_x_per,clab2),
          pch = 19, cex=1.4, col = team_colours()$team_colour1)
          #xlim = my_xlim, ylim = my_ylim)
+    rect(par("usr")[1], par("usr")[3], par("usr")[2], par("usr")[4], col = "light grey")
+    
+    points(x_dat, y_dat,
+           pch = 19, cex=1.4, col = team_colours()$team_colour1
+    )
+    
     points(x_dat, y_dat,
            pch = 4, col = team_colours()$team_colour2, lwd=1.2
     )
