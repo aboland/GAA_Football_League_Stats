@@ -12,25 +12,25 @@ gaa_data <- read.csv("LeagueResults_01_17.csv", stringsAsFactors = F)
 
 format(gaa_data$Date , format="%d/%b/%Y")
 gaa_data$Date <- as.Date(gaa_data$Date, "%d/%m/%Y")
-available_teams <- sort(unique(gaa_data$Team_Name))
+available_teams <- sort(unique(c(gaa_data$Team_Name,gaa_data$Opp_Name)))
 
 team_colours_data <- data.frame(team=c("ANTRIM", "ARMAGH", "CARLOW", "CAVAN", "CLARE", "CORK", "DERRY", 
-                           "DONEGAL", "DOWN", "FERMANAGH", "GALWAY", "KERRY", "KILDARE", "KILKENNY", 
+                           "DONEGAL", "DOWN", "DUBLIN", "FERMANAGH", "GALWAY", "KERRY", "KILDARE", "KILKENNY", 
                            "LAOIS", "LEITRIM", "LIMERICK", "LONDON", "LONGFORD", "MAYO", "MEATH", 
                            "MONAGHAN", "OFFALY", "ROSCOMMON", "SLIGO", "TIPPERARY", "TYRONE", 
                            "WATERFORD", "WESTMEATH", "WEXFORD", "WICKLOW"), 
                            team_neat=c("Antrim", "Armagh", "Carlow", "Cavan", "Clare", "Cork", "Derry", 
-                                  "Donegal", "Down", "Fermanagh", "Galway", "Kerry", "Kildare", "Kilkenny", 
+                                  "Donegal", "Down", "Dublin","Fermanagh", "Galway", "Kerry", "Kildare", "Kilkenny", 
                                   "Laois", "Leitrim", "Limerick", "London", "Longford", "Mayo", "Meath", 
                                   "Monaghan", "Offaly", "Roscommon", "Sligo", "Tipperary", "Tyrone", 
                                   "Waterford", "Westmeath", "Wexford", "Wiclow"), 
                         team_colour1=c("darkred", "orange", "green", "blue", "yellow", "red", "red",
-                                       "green", "red", "green", "darkred", "green", "white", "black",
+                                       "green", "red", "darkblue", "green", "darkred", "green", "white", "black",
                                        "blue", "green", "green", "white", "blue", "green", "green",
                                        "white", "green", "blue", "black", "blue", "white",
                                        "blue", "darkred", "purple", "blue"),
                         team_colour2=c("white", "white", "yellow", "white", "blue", "red", "white",
-                                       "gold", "black", "white", "white", "yellow", "white", "darkgoldenrod1",
+                                       "gold", "black", "lightblue", "white", "white", "yellow", "white", "darkgoldenrod1",
                                        "white", "gold", "white", "green", "gold", "red", "gold",
                                        "blue", "gold", "yellow", "white", "yellow", "red",
                                        "white", "white", "gold", "yellow"),
@@ -52,7 +52,7 @@ shinyServer(function(input, output) {
                                 xlab_ha = NULL)
   
   team_colours <- reactive({
-    active_teams <- unique(gaa_date()$Team_Name)
+    active_teams <- unique(c(gaa_date()$Team_Name, gaa_date()$Opp_Name))
     return(team_colours_data[which(team_colours_data$team %in% active_teams),])
   })
     # team= team_colours_data$team,
@@ -115,7 +115,7 @@ shinyServer(function(input, output) {
   })
   
   y_denominator <- reactive({
-    active_teams <- sort(unique(gaa_date()$Team_Name))
+    active_teams <- unique(c(gaa_date()$Team_Name, gaa_date()$Opp_Name))
     output <- data.frame(team=active_teams, stat=1)
     if(input$stat_choice_y_per == "no_div"){
       main_y_per <<- NULL
@@ -187,7 +187,7 @@ shinyServer(function(input, output) {
   
   
   x_numerator <- reactive({
-    active_teams <- sort(unique(gaa_date()$Team_Name))
+    active_teams <- unique(c(gaa_date()$Team_Name, gaa_date()$Opp_Name))
     output <- data.frame(team=active_teams, stat=0)
     if(input$stat_choice_x == "goals"){
       main_x <<- xlab <<- "Goals scored"
@@ -242,7 +242,7 @@ shinyServer(function(input, output) {
   })
   
   x_denominator <- reactive({
-    active_teams <- sort(unique(gaa_date()$Team_Name))
+    active_teams <- unique(c(gaa_date()$Team_Name, gaa_date()$Opp_Name))
     output <- data.frame(team=active_teams, stat=1)
     if(input$stat_choice_x_per == "no_div"){
       main_x_per <<- NULL
