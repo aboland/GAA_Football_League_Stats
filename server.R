@@ -55,6 +55,7 @@ shinyServer(function(input, output) {
                                 ylab_ha = NULL,
                                 xlab_ha = NULL)
   
+  
   team_colours <- reactive({
     active_teams <- sort(unique(c(gaa_date()$Team_Name, gaa_date()$Opp_Name)))
     return(team_colours_data[which(team_colours_data$team %in% active_teams),])
@@ -67,7 +68,7 @@ shinyServer(function(input, output) {
     active_teams <- sort(unique(c(gaa_date()$Team_Name, gaa_date()$Opp_Name)))
     output <- data.frame(team=active_teams, stat=0)
     if(input$stat_choice_y == "goals"){
-      main_y <<- ylab <<- "Goals scored"
+      plot_labels$main_y <<- plot_labels$ylab <<- "Goals scored"
       for(i in 1:nrow(output)){
         output[i,"stat"] <-  switch(home_away_y,
                                     "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Goals"]) + 
@@ -77,7 +78,7 @@ shinyServer(function(input, output) {
         
       }
     }else if(input$stat_choice_y == "goals_conc"){
-      main_y <<- ylab <<- "Goals conceded"
+      plot_labels$main_y <<- plot_labels$ylab <<- "Goals conceded"
       for(i in 1:nrow(output)){
           output[i,"stat"] <- switch(home_away_y,
                                      "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"]) + 
@@ -86,7 +87,7 @@ shinyServer(function(input, output) {
                                      "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"]))
       }
     }else if(input$stat_choice_y == "points"){
-      main_y <<- ylab <<- "Points scored"
+      plot_labels$main_y <<- plot_labels$ylab <<- "Points scored"
       for(i in 1:nrow(output)){
         output[i,"stat"] <- switch(home_away_y,
                                    "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]) + 
@@ -95,7 +96,7 @@ shinyServer(function(input, output) {
                                    "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"]))
       }
     }else if(input$stat_choice_y == "points_conc"){
-      main_y <<- ylab <<- "Points conceded"
+      plot_labels$main_y <<- plot_labels$ylab <<- "Points conceded"
       for(i in 1:nrow(output)){
         output[i,"stat"] <- switch(home_away_y,
                                    "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]) + 
@@ -111,10 +112,10 @@ shinyServer(function(input, output) {
     active_teams <- sort(unique(c(gaa_date()$Team_Name, gaa_date()$Opp_Name)))
     output <- data.frame(team=active_teams, stat=1)
     if(input$stat_choice_y_per == "no_div"){
-      main_y_per <<- NULL
+      plot_labels$main_y_per <<- NULL
       return(output)
     }else if(input$stat_choice_y_per == "p_game"){
-      main_y_per <<- "per game"
+      plot_labels$main_y_per <<- "per game"
       for(i in 1:nrow(output)){
         output[i,"stat"] <- switch(home_away_y,
                                    "all" = sum(gaa_date()$Team_Name==output[i,"team"]) + sum(gaa_date()$Opp_Name==output[i,"team"]),
@@ -122,7 +123,7 @@ shinyServer(function(input, output) {
                                    "away" = sum(gaa_date()$Opp_Name==output[i,"team"]))
       }
     }else if(input$stat_choice_y_per == "p_goal_score"){
-      main_y_per <<- "per goal scored"
+      plot_labels$main_y_per <<- "per goal scored"
       for(i in 1:nrow(output)){
         output[i,"stat"] <-  switch(home_away_y,
                                     "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Goals"]) + 
@@ -131,7 +132,7 @@ shinyServer(function(input, output) {
                                     "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Goals"]))
       }
     }else if(input$stat_choice_y_per == "p_goal_conc"){
-      main_y_per <<- "per goal conceded"
+      plot_labels$main_y_per <<- "per goal conceded"
       for(i in 1:nrow(output)){
         output[i,"stat"] <-  switch(home_away_y,
                                     "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"]) + 
@@ -140,7 +141,7 @@ shinyServer(function(input, output) {
                                     "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"]))
       }
     }else if(input$stat_choice_y == "p_points"){
-      main_y_per <<- "per point scored"
+      plot_labels$main_y_per <<- "per point scored"
       for(i in 1:nrow(output)){
         output[i,"stat"] <-  switch(home_away_y,
                                     "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Points"]) + 
@@ -149,7 +150,7 @@ shinyServer(function(input, output) {
                                     "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Points"]))
       }
     }else if(input$stat_choice_y == "p_points_conc"){
-      main_y_per <<- "per point conceded"
+      plot_labels$main_y_per <<- "per point conceded"
       for(i in 1:nrow(output)){
         output[i,"stat"] <-  switch(home_away_y,
                                     "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]) + 
@@ -177,7 +178,7 @@ shinyServer(function(input, output) {
                                    "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Goals"]))
       }
     }else if(input$stat_choice_x == "goals_conc"){
-      main_x <<- xlab <<- "Goals conceded"
+      plot_labels$main_x <<- plot_labels$xlab <<- "Goals conceded"
       for(i in 1:nrow(output)){
         output[i,"stat"] <- switch(home_away_x,
                                    "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"]) + 
@@ -186,7 +187,7 @@ shinyServer(function(input, output) {
                                    "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"]))
       }
     }else if(input$stat_choice_x == "points"){
-      main_x <<- xlab <<- "Points scored"
+      plot_labels$main_x <<- plot_labels$xlab <<- "Points scored"
       for(i in 1:nrow(output)){
         output[i,"stat"] <- switch(home_away_x,
                                    "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Points"]) + 
@@ -195,7 +196,7 @@ shinyServer(function(input, output) {
                                    "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Points"]))
       }
     }else if(input$stat_choice_x == "points_conc"){
-      main_x <<- xlab <<- "Points conceded"
+      plot_labels$main_x <<- plot_labels$xlab <<- "Points conceded"
       for(i in 1:nrow(output)){
         output[i,"stat"] <- switch(home_away_x,
                                    "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]) + 
@@ -211,10 +212,10 @@ shinyServer(function(input, output) {
     active_teams <- sort(unique(c(gaa_date()$Team_Name, gaa_date()$Opp_Name)))
     output <- data.frame(team=active_teams, stat=1)
     if(input$stat_choice_x_per == "no_div"){
-      main_x_per <<- NULL
+      plot_labels$main_x_per <<- NULL
       return(output)
     }else if(input$stat_choice_x_per == "p_game"){
-      main_x_per <<- "per game"
+      plot_labels$main_x_per <<- "per game"
       for(i in 1:nrow(output)){
         output[i,"stat"] <-  switch(home_away_x,
                                     "all" = sum(gaa_date()$Team_Name==output[i,"team"]) + sum(gaa_date()$Opp_Name==output[i,"team"]),
@@ -222,7 +223,7 @@ shinyServer(function(input, output) {
                                     "away" = sum(gaa_date()$Opp_Name==output[i,"team"]))
       }
     }else if(input$stat_choice_x_per == "p_goal_score"){
-      main_x_per <<- "per goal scored"
+      plot_labels$main_x_per <<- "per goal scored"
       for(i in 1:nrow(output)){
         output[i,"stat"] <- switch(home_away_x,
                                    "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Goals"]) + 
@@ -231,7 +232,7 @@ shinyServer(function(input, output) {
                                    "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Goals"]))
       }
     }else if(input$stat_choice_x_per == "p_goal_conc"){
-      main_x_per <<- "per goal conceded"
+      plot_labels$main_x_per <<- "per goal conceded"
       for(i in 1:nrow(output)){
         output[i,"stat"] <- switch(home_away_x,
                                    "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"]) + 
@@ -240,7 +241,7 @@ shinyServer(function(input, output) {
                                    "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"]))
       }
     }else if(input$stat_choice_x == "p_points"){
-      main_x_per <<- "per point scored"
+      plot_labels$main_x_per <<- "per point scored"
       for(i in 1:nrow(output)){
         output[i,"stat"] <- switch(home_away_x,
                                    "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Points"]) + 
@@ -249,7 +250,7 @@ shinyServer(function(input, output) {
                                    "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Points"]))
       }
     }else if(input$stat_choice_x == "p_points_conc"){
-      main_x_per <<- "per point conceded"
+      plot_labels$main_x_per <<- "per point conceded"
       for(i in 1:nrow(output)){
         output[i,"stat"] <- switch(home_away_x,
                                    "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]) + 
@@ -275,12 +276,12 @@ shinyServer(function(input, output) {
     if(input$season_range_c[1] >= "2017-01-01"){  clab2 <- "this season"
     }else{  clab2 <- paste("between",format(input$season_range_c[1],"%d %b '%y"),"and",format(input$season_range_c[2],"%d %b '%y")) }
     
-    y_lab_ha <<- switch(home_away_y,
+    plot_labels$y_lab_ha <<- switch(home_away_y,
                         "all" = NULL,
                         "home" = "(home)",
                         "away" = "(away)")
     
-    y_lab_ha <<- switch(home_away_x,
+    plot_labels$y_lab_ha <<- switch(home_away_x,
                         "all" = NULL,
                         "home" = "(home)",
                         "away" = "(away)")
@@ -297,8 +298,8 @@ shinyServer(function(input, output) {
     # }
     
     #labels for click data
-    click_xlab <<- paste0(xlab," ",main_x_per)
-    click_ylab <<- paste0(ylab," ",main_y_per)
+    click_xlab <<- paste0(plot_labels$xlab," ",plot_labels$main_x_per)
+    click_ylab <<- paste0(plot_labels$ylab," ",plot_labels$main_y_per)
     
     #plot_data_cx <- round(x_dat/plot_data_cx2, digits=4)
     click_xdata <<- x_dat
@@ -309,8 +310,8 @@ shinyServer(function(input, output) {
     #plot(y_numerator()$stat/y_denominator()$stat, x_numerator()$stat/x_denominator()$stat)
     plot(x_dat, y_dat,
          #main = paste(cylab,per_cylab,"vs.",cxlab,per_cxlab,clab2),
-         ylab = paste(ylab, main_y_per, y_lab_ha), xlab=paste(xlab, main_x_per, x_lab_ha),
-         main = paste(main_y,main_y_per,"vs.",main_x,main_x_per,clab2),
+         ylab = paste(plot_labels$ylab, plot_labels$main_y_per, plot_labels$y_lab_ha), xlab=paste(plot_labels$xlab, plot_labels$main_x_per, plot_labels$x_lab_ha),
+         main = paste(plot_labels$main_y, plot_labels$main_y_per,"vs.", plot_labels$main_x, plot_labels$main_x_per, plot_labels$clab2),
          pch = 19, cex=1.4, col = team_colours()$team_colour1)
          #xlim = my_xlim, ylim = my_ylim)
     rect(par("usr")[1], par("usr")[3], par("usr")[2], par("usr")[4], col = "light grey")
