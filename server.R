@@ -52,7 +52,7 @@ shinyServer(function(input, output) {
                                 xlab_ha = NULL)
   
   team_colours <- reactive({
-    active_teams <- unique(c(gaa_date()$Team_Name, gaa_date()$Opp_Name))
+    active_teams <- sort(unique(c(gaa_date()$Team_Name, gaa_date()$Opp_Name)))
     return(team_colours_data[which(team_colours_data$team %in% active_teams),])
   })
     # team= team_colours_data$team,
@@ -60,7 +60,7 @@ shinyServer(function(input, output) {
     #                              colour2 = team_colours_data$team_colour2
   
   y_numerator <- reactive({
-    active_teams <- sort(unique(gaa_date()$Team_Name))
+    active_teams <- sort(unique(c(gaa_date()$Team_Name, gaa_date()$Opp_Name)))
     output <- data.frame(team=active_teams, stat=0)
     if(input$stat_choice_y == "goals"){
       main_y <<- ylab <<- "Goals scored"
@@ -115,7 +115,7 @@ shinyServer(function(input, output) {
   })
   
   y_denominator <- reactive({
-    active_teams <- unique(c(gaa_date()$Team_Name, gaa_date()$Opp_Name))
+    active_teams <- sort(unique(c(gaa_date()$Team_Name, gaa_date()$Opp_Name)))
     output <- data.frame(team=active_teams, stat=1)
     if(input$stat_choice_y_per == "no_div"){
       main_y_per <<- NULL
@@ -301,7 +301,7 @@ shinyServer(function(input, output) {
   
   
   output$plot_stats_custom <- renderPlot({
-    
+
     y_dat <- y_numerator()$stat/y_denominator()$stat
     x_dat <- x_numerator()$stat/x_denominator()$stat
     
