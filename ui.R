@@ -51,7 +51,7 @@ shinyUI(fluidPage(#theme="bootstrap.css",
                                                 selectInput("stat_choice_x_per", label = NULL, 
                                                             choices = list("By" = "no_div",
                                                                            "Per game" = "p_game",
-                                                                           "Per season" = "p_goal",
+                                                                           "Per goal scored" = "p_goal_score",
                                                                            "Per goal conceded" = "p_goal_conc"#,
                                                                            # "At home" = "p_home",
                                                                            # "Away" = "p_away"
