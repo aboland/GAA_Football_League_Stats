@@ -16,27 +16,31 @@ available_teams <- sort(unique(c(gaa_data$Team_Name,gaa_data$Opp_Name)))
 
 team_colours_data <- data.frame(team=c("ANTRIM", "ARMAGH", "CARLOW", "CAVAN", "CLARE", "CORK", "DERRY", 
                            "DONEGAL", "DOWN", "DUBLIN", "FERMANAGH", "GALWAY", "KERRY", "KILDARE", "KILKENNY", 
-                           "LAOIS", "LEITRIM", "LIMERICK", "LONDON", "LONGFORD", "MAYO", "MEATH", 
+                           "LAOIS", "LEITRIM", "LIMERICK", "LONDON", "LONGFORD", "LOUTH", "MAYO", "MEATH", 
                            "MONAGHAN", "OFFALY", "ROSCOMMON", "SLIGO", "TIPPERARY", "TYRONE", 
                            "WATERFORD", "WESTMEATH", "WEXFORD", "WICKLOW"), 
                            team_neat=c("Antrim", "Armagh", "Carlow", "Cavan", "Clare", "Cork", "Derry", 
                                   "Donegal", "Down", "Dublin","Fermanagh", "Galway", "Kerry", "Kildare", "Kilkenny", 
-                                  "Laois", "Leitrim", "Limerick", "London", "Longford", "Mayo", "Meath", 
+                                  "Laois", "Leitrim", "Limerick", "London", "Longford", "Louth", "Mayo", "Meath", 
                                   "Monaghan", "Offaly", "Roscommon", "Sligo", "Tipperary", "Tyrone", 
                                   "Waterford", "Westmeath", "Wexford", "Wiclow"), 
-                        team_colour1=c("darkred", "orange", "green", "blue", "yellow", "red", "red",
+                        team_colour1=c("yellow", "orange", "green", "blue", "yellow", "red", "red",
                                        "green", "red", "darkblue", "green", "darkred", "green", "white", "black",
-                                       "blue", "green", "green", "white", "blue", "green", "green",
+                                       "blue", "green", "green", "white", "blue", "red", "green", "green",
                                        "white", "green", "blue", "black", "blue", "white",
                                        "blue", "darkred", "purple", "blue"),
-                        team_colour2=c("white", "white", "yellow", "white", "blue", "red", "white",
+                        team_colour2=c("white", "white", "red", "white", "blue", "red", "white",
                                        "gold", "black", "lightblue", "white", "white", "yellow", "white", "darkgoldenrod1",
-                                       "white", "gold", "white", "green", "gold", "red", "gold",
+                                       "white", "gold", "white", "green", "gold", "white", "red", "gold",
                                        "blue", "gold", "yellow", "white", "yellow", "red",
                                        "white", "white", "gold", "yellow"),
                         stringsAsFactors = F)
 
 shinyServer(function(input, output) {
+  
+  #home_away_y <- input$home_away_y
+  #home_away_x <- input$home_away_x
+  home_away_x <- home_away_y <- "all"
   
   gaa_date <- reactive({
     gaa_data[which(gaa_data$Date>=input$season_range_c[1] & gaa_data$Date<=input$season_range_c[2]),]
@@ -65,50 +69,39 @@ shinyServer(function(input, output) {
     if(input$stat_choice_y == "goals"){
       main_y <<- ylab <<- "Goals scored"
       for(i in 1:nrow(output)){
-        if(input$home_away_y=="all"){
-        output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Goals"]) + 
-          sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Goals"])
-        }else if(input$home_away_y=="home"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Goals"])
-        }else if(input$home_away_y=="away"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Goals"])
-        }
+        output[i,"stat"] <-  switch(home_away_y,
+                                    "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Goals"]) + 
+                                      sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Goals"]),
+                                    "home" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Goals"]),
+                                    "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Goals"]))
+        
       }
     }else if(input$stat_choice_y == "goals_conc"){
       main_y <<- ylab <<- "Goals conceded"
       for(i in 1:nrow(output)){
-        if(input$home_away_y=="all"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"]) + 
-            sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"])
-        }else if(input$home_away_y=="home"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"])
-        }else if(input$home_away_y=="away"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"])
-        }
+          output[i,"stat"] <- switch(home_away_y,
+                                     "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"]) + 
+                                       sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"]),
+                                     "home" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"]),
+                                     "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"]))
       }
     }else if(input$stat_choice_y == "points"){
       main_y <<- ylab <<- "Points scored"
       for(i in 1:nrow(output)){
-        if(input$home_away_y=="all"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]) + 
-            sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"])
-        }else if(input$home_away_y=="home"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"])
-        }else if(input$home_away_y=="away"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"])
-        }
+        output[i,"stat"] <- switch(home_away_y,
+                                   "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]) + 
+                                     sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"]),
+                                   "home" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]),
+                                   "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"]))
       }
     }else if(input$stat_choice_y == "points_conc"){
       main_y <<- ylab <<- "Points conceded"
       for(i in 1:nrow(output)){
-        if(input$home_away_y=="all"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]) + 
-            sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"])
-        }else if(input$home_away_y=="home"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"])
-        }else if(input$home_away_y=="away"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"])
-        }
+        output[i,"stat"] <- switch(home_away_y,
+                                   "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]) + 
+                                     sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"]),
+                                   "home" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]),
+                                   "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"]))
       }
     }
     return(output)
@@ -123,126 +116,99 @@ shinyServer(function(input, output) {
     }else if(input$stat_choice_y_per == "p_game"){
       main_y_per <<- "per game"
       for(i in 1:nrow(output)){
-        if(input$home_away_y=="all"){
-          output[i,"stat"] <- sum(gaa_date()$Team_Name==output[i,"team"]) + sum(gaa_date()$Opp_Name==output[i,"team"])
-        }else if(input$home_away_y=="home"){
-          output[i,"stat"] <- sum(gaa_date()$Team_Name==output[i,"team"])
-        }else if(input$home_away_y=="away"){
-          output[i,"stat"] <- sum(gaa_date()$Opp_Name==output[i,"team"])
-        }
+        output[i,"stat"] <- switch(home_away_y,
+                                   "all" = sum(gaa_date()$Team_Name==output[i,"team"]) + sum(gaa_date()$Opp_Name==output[i,"team"]),
+                                   "home" = sum(gaa_date()$Team_Name==output[i,"team"]),
+                                   "away" = sum(gaa_date()$Opp_Name==output[i,"team"]))
       }
     }else if(input$stat_choice_y_per == "p_goal_score"){
       main_y_per <<- "per goal scored"
       for(i in 1:nrow(output)){
-        if(input$home_away_y=="all"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Goals"]) + 
-            sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Goals"])
-        }else if(input$home_away_y=="home"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Goals"])
-        }else if(input$home_away_y=="away"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Goals"])
-        }
+        output[i,"stat"] <-  switch(home_away_y,
+                                    "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Goals"]) + 
+                                      sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Goals"]),
+                                    "home" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Goals"]),
+                                    "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Goals"]))
       }
     }else if(input$stat_choice_y_per == "p_goal_conc"){
       main_y_per <<- "per goal conceded"
       for(i in 1:nrow(output)){
-        if(input$home_away_y=="all"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"]) + 
-            sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"])
-        }else if(input$home_away_y=="home"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"])
-        }else if(input$home_away_y=="away"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"])
-        }
-        
+        output[i,"stat"] <-  switch(home_away_y,
+                                    "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"]) + 
+                                      sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"]),
+                                    "home" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"]),
+                                    "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"]))
       }
     }else if(input$stat_choice_y == "p_points"){
       main_y_per <<- "per point scored"
       for(i in 1:nrow(output)){
-        if(input$home_away_y=="all"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]) + 
-            sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"])
-        }else if(input$home_away_y=="home"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"])
-        }else if(input$home_away_y=="away"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"])
-        }
+        output[i,"stat"] <-  switch(home_away_y,
+                                    "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Points"]) + 
+                                      sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Points"]),
+                                    "home" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Points"]),
+                                    "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Points"]))
       }
     }else if(input$stat_choice_y == "p_points_conc"){
       main_y_per <<- "per point conceded"
       for(i in 1:nrow(output)){
-        if(input$home_away_y=="all"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]) + 
-            sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"])
-        }else if(input$home_away_y=="home"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"])
-        }else if(input$home_away_y=="away"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"])
-        }
+        output[i,"stat"] <-  switch(home_away_y,
+                                    "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]) + 
+                                      sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"]),
+                                    "home" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]),
+                                    "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"]))
       }
     }
+    output$stat[which(output$team %in% y_numerator()$team[which(y_numerator()$stat==0)])] <- 1
     return(output)
   })
   
   
   
   x_numerator <- reactive({
-    active_teams <- unique(c(gaa_date()$Team_Name, gaa_date()$Opp_Name))
+    active_teams <- sort(unique(c(gaa_date()$Team_Name, gaa_date()$Opp_Name)))
     output <- data.frame(team=active_teams, stat=0)
     if(input$stat_choice_x == "goals"){
       main_x <<- xlab <<- "Goals scored"
       for(i in 1:nrow(output)){
-        if(input$home_away_x=="all"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Goals"]) + 
-            sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Goals"])
-        }else if(input$home_away_x=="home"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Goals"])
-        }else if(input$home_away_x=="away"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Goals"])
-        }
+        output[i,"stat"] <- switch(home_away_x,
+                                   "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Goals"]) + 
+                                     sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Goals"]),
+                                   "home" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Goals"]),
+                                   "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Goals"]))
       }
     }else if(input$stat_choice_x == "goals_conc"){
       main_x <<- xlab <<- "Goals conceded"
       for(i in 1:nrow(output)){
-        if(input$home_away_x=="all"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"]) + 
-            sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"])
-        }else if(input$home_away_x=="home"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"])
-        }else if(input$home_away_x=="away"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"])
-        }
+        output[i,"stat"] <- switch(home_away_x,
+                                   "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"]) + 
+                                     sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"]),
+                                   "home" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"]),
+                                   "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"]))
       }
     }else if(input$stat_choice_x == "points"){
       main_x <<- xlab <<- "Points scored"
       for(i in 1:nrow(output)){
-        if(input$home_away_x=="all"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]) + 
-            sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"])
-        }else if(input$home_away_x=="home"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"])
-        }else if(input$home_away_x=="away"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"])
-        }
+        output[i,"stat"] <- switch(home_away_x,
+                                   "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Points"]) + 
+                                     sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Points"]),
+                                   "home" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Points"]),
+                                   "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Points"]))
       }
     }else if(input$stat_choice_x == "points_conc"){
       main_x <<- xlab <<- "Points conceded"
       for(i in 1:nrow(output)){
-        if(input$home_away_x=="all"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]) + 
-            sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"])
-        }else if(input$home_away_x=="home"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"])
-        }else if(input$home_away_x=="away"){
-          output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"])
-        }
+        output[i,"stat"] <- switch(home_away_x,
+                                   "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]) + 
+                                     sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"]),
+                                   "home" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]),
+                                   "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"]))
       }
     }
     return(output)
   })
   
   x_denominator <- reactive({
-    active_teams <- unique(c(gaa_date()$Team_Name, gaa_date()$Opp_Name))
+    active_teams <- sort(unique(c(gaa_date()$Team_Name, gaa_date()$Opp_Name)))
     output <- data.frame(team=active_teams, stat=1)
     if(input$stat_choice_x_per == "no_div"){
       main_x_per <<- NULL
@@ -250,46 +216,47 @@ shinyServer(function(input, output) {
     }else if(input$stat_choice_x_per == "p_game"){
       main_x_per <<- "per game"
       for(i in 1:nrow(output)){
-        if(input$home_away_x=="all"){  output[i,"stat"] <- sum(gaa_date()$Team_Name==output[i,"team"]) + sum(gaa_date()$Opp_Name==output[i,"team"])
-        }else if(input$home_away_x=="home"){  output[i,"stat"] <- sum(gaa_date()$Team_Name==output[i,"team"])
-        }else if(input$home_away_x=="away"){  output[i,"stat"] <- sum(gaa_date()$Opp_Name==output[i,"team"])
-        }
+        output[i,"stat"] <-  switch(home_away_x,
+                                    "all" = sum(gaa_date()$Team_Name==output[i,"team"]) + sum(gaa_date()$Opp_Name==output[i,"team"]),
+                                    "home" = sum(gaa_date()$Team_Name==output[i,"team"]),
+                                    "away" = sum(gaa_date()$Opp_Name==output[i,"team"]))
       }
     }else if(input$stat_choice_x_per == "p_goal_score"){
       main_x_per <<- "per goal scored"
       for(i in 1:nrow(output)){
-        if(input$home_away_x=="all"){  output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Goals"]) + 
-            sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Goals"])
-        }else if(input$home_away_x=="home"){  output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Goals"])
-        }else if(input$home_away_x=="away"){  output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Goals"])
-        }
+        output[i,"stat"] <- switch(home_away_x,
+                                   "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Goals"]) + 
+                                     sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Goals"]),
+                                   "home" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Goals"]),
+                                   "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Goals"]))
       }
     }else if(input$stat_choice_x_per == "p_goal_conc"){
       main_x_per <<- "per goal conceded"
       for(i in 1:nrow(output)){
-        if(input$home_away_x=="all"){  output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"]) + 
-            sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"])
-        }else if(input$home_away_x=="home"){  output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"])
-        }else if(input$home_away_x=="away"){  output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"])
-        }
+        output[i,"stat"] <- switch(home_away_x,
+                                   "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"]) + 
+                                     sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"]),
+                                   "home" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Goals"]),
+                                   "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"]))
       }
     }else if(input$stat_choice_x == "p_points"){
       main_x_per <<- "per point scored"
       for(i in 1:nrow(output)){
-        if(input$home_away_x=="all"){  output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]) + 
-            sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"])
-        }else if(input$home_away_x=="home"){  output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"])
-        }else if(input$home_away_x=="away"){  output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"])
-        }
+        output[i,"stat"] <- switch(home_away_x,
+                                   "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Points"]) + 
+                                     sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Points"]),
+                                   "home" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Team_Points"]),
+                                   "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Opp_Points"]))
       }
     }else if(input$stat_choice_x == "p_points_conc"){
       main_x_per <<- "per point conceded"
       for(i in 1:nrow(output)){
-        if(input$home_away_x=="all"){  output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]) + 
-            sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Goals"])
-        }else if(input$home_away_x=="home"){  output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"])
-        }else if(input$home_away_x=="away"){  output[i,"stat"] <- sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"])
-        }
+        output[i,"stat"] <- switch(home_away_x,
+                                   "all" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]) + 
+                                     sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"]),
+                                   "home" = sum(gaa_date()[which(gaa_date()$Team_Name==output[i,"team"]), "Opp_Points"]),
+                                   "away" = sum(gaa_date()[which(gaa_date()$Opp_Name==output[i,"team"]), "Team_Points"]))
+
       }
     }
     return(output)
@@ -308,12 +275,15 @@ shinyServer(function(input, output) {
     if(input$season_range_c[1] >= "2017-01-01"){  clab2 <- "this season"
     }else{  clab2 <- paste("between",format(input$season_range_c[1],"%d %b '%y"),"and",format(input$season_range_c[2],"%d %b '%y")) }
     
-    if(input$home_away_y=="all"){  y_lab_ha <<- NULL
-    }else if(input$home_away_y=="home"){  y_lab_ha <<- "(home)"
-    }else if(input$home_away_y=="away"){  y_lab_ha <<- "(away)"}
-    if(input$home_away_x=="all"){  x_lab_ha <<- NULL
-    }else if(input$home_away_x=="home"){  x_lab_ha <<- "(home)"
-    }else if(input$home_away_x=="away"){  x_lab_ha <<- "(away)"}
+    y_lab_ha <<- switch(home_away_y,
+                        "all" = NULL,
+                        "home" = "(home)",
+                        "away" = "(away)")
+    
+    y_lab_ha <<- switch(home_away_x,
+                        "all" = NULL,
+                        "home" = "(home)",
+                        "away" = "(away)")
     
     
     # if(input$custom_boundaries == TRUE){
@@ -362,7 +332,7 @@ shinyServer(function(input, output) {
         sqrt(apply((cbind(click_xdata, y_numerator()$stat/y_denominator()$stat)- matrix(selected,nrow=length(click_xdata),byrow=T,ncol=2))^2,1,sum))
       )
       output$info_cus <- renderText({
-        paste0(team_colours()$team_neat[closest_team],":\ ",click_xlab,": ", click_xdata[closest_team],",\ ",click_ylab,": ", click_ydata[closest_team])
+        paste0(team_colours()$team_neat[closest_team],":\ ",click_xlab,": ", round(click_xdata[closest_team],2),",\ ",click_ylab,": ", round(click_ydata[closest_team],2))
       })
     }else{
       output$info_cus <- renderText({
