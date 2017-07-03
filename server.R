@@ -43,7 +43,14 @@ shinyServer(function(input, output) {
   home_away_x <- home_away_y <- "all"
   
   gaa_date <- reactive({
-    gaa_data[which(gaa_data$Date>=input$season_range_c[1] & gaa_data$Date<=input$season_range_c[2]),]
+    the_data <- gaa_data[which(gaa_data$Date>=input$season_range_c[1] & gaa_data$Date<=input$season_range_c[2]),]
+    div_teams <- switch(input$select_division,
+                        "all" = 1:nrow(the_data),
+                        "1" = which(the_data$Division==1),
+                        "2" = which(the_data$Division==2),
+                        "3" = which(the_data$Division==3),
+                        "4" = which(the_data$Division==4))
+    return(the_data[div_teams,])
   })
   
   plot_labels <- reactiveValues(ylab=NULL,
@@ -320,8 +327,11 @@ shinyServer(function(input, output) {
   
   output$plot_stats_custom <- renderPlot({
 
-    y_dat <- y_numerator()$stat/y_denominator()$stat
-    x_dat <- x_numerator()$stat/x_denominator()$stat
+    #y_dat <<- jitter(y_numerator()$stat/y_denominator()$stat, factor=1)
+    #x_dat <<- jitter(x_numerator()$stat/x_denominator()$stat, factor=1)
+    
+    y_dat <<- y_numerator()$stat/y_denominator()$stat
+    x_dat <<- x_numerator()$stat/x_denominator()$stat
     
     if(input$season_range_c[1] >= "2017-01-01"){  clab2 <- "this season"
     }else{  clab2 <- paste("between",format(input$season_range_c[1],"%d %b '%y"),"and",format(input$season_range_c[2],"%d %b '%y")) }
@@ -352,9 +362,9 @@ shinyServer(function(input, output) {
     click_ylab <<- paste0(plot_labels$ylab," ",plot_labels$main_y_per)
     
     #plot_data_cx <- round(x_dat/plot_data_cx2, digits=4)
-    click_xdata <<- x_dat
+    click_xdata <<- x_numerator()$stat/x_denominator()$stat
     #plot_data_cy <- round(y_dat/plot_data_cy2, digits=4)
-    click_ydata <<- y_dat
+    click_ydata <<- y_numerator()$stat/y_denominator()$stat
     
     #par(bg="grey")
     #plot(y_numerator()$stat/y_denominator()$stat, x_numerator()$stat/x_denominator()$stat)
@@ -363,7 +373,7 @@ shinyServer(function(input, output) {
          ylab = paste(plot_labels$ylab, plot_labels$main_y_per, plot_labels$y_lab_ha), xlab=paste(plot_labels$xlab, plot_labels$main_x_per, plot_labels$x_lab_ha),
          main = paste(plot_labels$main_y, plot_labels$main_y_per,"vs.", plot_labels$main_x, plot_labels$main_x_per, plot_labels$clab2),
          pch = 19, cex=1.4, col = team_colours()$team_colour1)
-         #xlim = my_xlim, ylim = my_ylim)
+         # xlim = my_xlim, ylim = my_ylim)
     rect(par("usr")[1], par("usr")[3], par("usr")[2], par("usr")[4], col = "light grey")
     
     points(x_dat, y_dat,
@@ -380,7 +390,8 @@ shinyServer(function(input, output) {
     if(!is.null(input$custom_plot_click$x)&&!is.null(input$custom_plot_click$y)&&!is.null(click_xdata)){
       selected <- c(input$custom_plot_click$x,input$custom_plot_click$y)
       closest_team <- which.min(
-        sqrt(apply((cbind(click_xdata, y_numerator()$stat/y_denominator()$stat)- matrix(selected,nrow=length(click_xdata),byrow=T,ncol=2))^2,1,sum))
+        #sqrt(apply((cbind(click_xdata, y_numerator()$stat/y_denominator()$stat)- matrix(selected,nrow=length(click_xdata),byrow=T,ncol=2))^2,1,sum))
+        sqrt(apply((cbind(x_dat, y_dat)- matrix(selected,nrow=length(click_xdata),byrow=T,ncol=2))^2,1,sum))
       )
       output$info_cus <- renderText({
         paste0(team_colours()$team_neat[closest_team],":\ ",click_xlab,": ", round(click_xdata[closest_team],2),",\ ",click_ylab,": ", round(click_ydata[closest_team],2))
